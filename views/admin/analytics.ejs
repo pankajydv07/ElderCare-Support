@@ -1,0 +1,213 @@
+<% layout('layouts/main') -%>
+
+<div class="container mt-4">
+    <h1 class="h3 mb-4">Analytics Dashboard</h1>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="h4 mb-0"><%= requestsByCategory.reduce((sum, cat) => sum + cat.count, 0) %></div>
+                            <div>Total Requests</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clipboard-data fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="h4 mb-0"><%= topVolunteers.length %></div>
+                            <div>Active Volunteers</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-people fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="h4 mb-0"><%= avgRating.toFixed(1) %></div>
+                            <div>Avg Rating</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-star fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="h4 mb-0"><%= topVolunteers.reduce((sum, vol) => sum + vol.completedTasks, 0) %></div>
+                            <div>Tasks Completed</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Requests by Category -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Requests by Category</h5>
+                </div>
+                <div class="card-body">
+                    <% if (requestsByCategory.length > 0) { %>
+                        <% requestsByCategory.forEach(category => { %>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><%= category._id.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+                                <div>
+                                    <span class="badge bg-primary"><%= category.count %></span>
+                                </div>
+                            </div>
+                            <div class="progress mb-3" style="height: 6px;">
+                                <div class="progress-bar" style="width: <%= (category.count / Math.max(...requestsByCategory.map(c => c.count))) * 100 %>%"></div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-muted">No data available</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests by Status -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Requests by Status</h5>
+                </div>
+                <div class="card-body">
+                    <% if (requestsByStatus.length > 0) { %>
+                        <% requestsByStatus.forEach(status => { %>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><%= status._id.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %></span>
+                                <div>
+                                    <% let statusClass = 'secondary'; %>
+                                    <% if (status._id === 'completed') statusClass = 'success'; %>
+                                    <% if (status._id === 'in-progress') statusClass = 'warning'; %>
+                                    <% if (status._id === 'assigned') statusClass = 'info'; %>
+                                    <% if (status._id === 'open') statusClass = 'primary'; %>
+                                    <span class="badge bg-<%= statusClass %>"><%= status.count %></span>
+                                </div>
+                            </div>
+                            <div class="progress mb-3" style="height: 6px;">
+                                <div class="progress-bar bg-<%= statusClass %>" style="width: <%= (status.count / Math.max(...requestsByStatus.map(s => s.count))) * 100 %>%"></div>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-muted">No data available</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Volunteers -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Top Volunteers</h5>
+                </div>
+                <div class="card-body">
+                    <% if (topVolunteers.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Name</th>
+                                        <th>Tasks Completed</th>
+                                        <th>Rating</th>
+                                        <th>Badges</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% topVolunteers.forEach((volunteer, index) => { %>
+                                        <tr>
+                                            <td>
+                                                <% if (index === 0) { %>
+                                                    <i class="bi bi-trophy-fill text-warning"></i>
+                                                <% } else if (index === 1) { %>
+                                                    <i class="bi bi-trophy text-secondary"></i>
+                                                <% } else if (index === 2) { %>
+                                                    <i class="bi bi-trophy text-warning"></i>
+                                                <% } else { %>
+                                                    <%= index + 1 %>
+                                                <% } %>
+                                            </td>
+                                            <td><%= volunteer.name %></td>
+                                            <td><%= volunteer.completedTasks %></td>
+                                            <td>
+                                                <% if (volunteer.rating > 0) { %>
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <%= volunteer.rating %>
+                                                <% } else { %>
+                                                    <span class="text-muted">No rating</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <% if (volunteer.badges && volunteer.badges.length > 0) { %>
+                                                    <span class="badge bg-success"><%= volunteer.badges.length %></span>
+                                                <% } else { %>
+                                                    <span class="text-muted">0</span>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <p class="text-muted">No volunteer data available</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly Trends -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Monthly Request Trends</h5>
+                </div>
+                <div class="card-body">
+                    <% if (monthlyRequests.length > 0) { %>
+                        <% monthlyRequests.forEach(month => { %>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span><%= month._id.month %>/<%= month._id.year %></span>
+                                <span class="badge bg-primary"><%= month.count %></span>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p class="text-muted">No trend data available</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

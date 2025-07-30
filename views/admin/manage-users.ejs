@@ -1,0 +1,565 @@
+<% layout('layouts/main') -%>
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">User Management</h1>
+            <p class="text-muted mb-0">Manage all users across the platform</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-danger" id="bulkDeleteBtn" style="display: none;">
+                <i class="bi bi-trash"></i> Delete Selected
+            </button>
+            <button class="btn btn-success" id="bulkVerifyBtn" style="display: none;">
+                <i class="bi bi-check-circle"></i> Verify Selected
+            </button>
+            <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                <i class="bi bi-person-plus"></i> Add User
+            </button>
+        </div>
+    </div>
+
+    <!-- User Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-primary"><%= userStats.totalElders %></h4>
+                    <small class="text-muted">Elders</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-success"><%= userStats.totalVolunteers %></h4>
+                    <small class="text-muted">Volunteers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-info"><%= userStats.totalAdmins %></h4>
+                    <small class="text-muted">Admins</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-warning"><%= userStats.verifiedVolunteers %></h4>
+                    <small class="text-muted">Verified Volunteers</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-danger"><%= userStats.unverifiedVolunteers %></h4>
+                    <small class="text-muted">Unverified Volunteers</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-select">
+                        <option value="all" <%= filters.role === 'all' ? 'selected' : '' %>>All Roles</option>
+                        <option value="elder" <%= filters.role === 'elder' ? 'selected' : '' %>>Elders</option>
+                        <option value="volunteer" <%= filters.role === 'volunteer' ? 'selected' : '' %>>Volunteers</option>
+                        <option value="admin" <%= filters.role === 'admin' ? 'selected' : '' %>>Admins</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Verification Status</label>
+                    <select name="verified" class="form-select">
+                        <option value="" <%= !filters.verified ? 'selected' : '' %>>All Status</option>
+                        <option value="true" <%= filters.verified === 'true' ? 'selected' : '' %>>Verified</option>
+                        <option value="false" <%= filters.verified === 'false' ? 'selected' : '' %>>Unverified</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Search</label>
+                    <input type="text" name="search" class="form-control" placeholder="Name, email, or phone..." value="<%= filters.search || '' %>">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Filter
+                        </button>
+                        <a href="/admin/manage-users" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Users (<%= totalUsers %>)</h5>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="selectAll">
+                <label class="form-check-label" for="selectAll">
+                    Select All
+                </label>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <% if (users.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th width="50">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="masterCheckbox">
+                                    </div>
+                                </th>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Contact</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Last Active</th>
+                                <th width="150">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% users.forEach(user => { %>
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input user-checkbox" type="checkbox" value="<%= user._id %>">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-<%= user.role === 'admin' ? 'danger' : user.role === 'volunteer' ? 'success' : 'primary' %> text-white me-3">
+                                                <i class="bi bi-<%= user.role === 'admin' ? 'shield-fill' : user.role === 'volunteer' ? 'hand-thumbs-up' : 'person-fill' %>"></i>
+                                            </div>
+                                            <div>
+                                                <strong><%= user.name %></strong>
+                                                <br><small class="text-muted"><%= user.email %></small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-<%= user.role === 'admin' ? 'danger' : user.role === 'volunteer' ? 'success' : 'primary' %>">
+                                            <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            <i class="bi bi-phone"></i> <%= user.phone %><br>
+                                            <% if (user.address && user.address.city) { %>
+                                                <i class="bi bi-geo-alt"></i> <%= user.address.city %>
+                                            <% } %>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <% if (user.role === 'volunteer') { %>
+                                            <span class="badge bg-<%= user.isVerified ? 'success' : 'warning' %>">
+                                                <i class="bi bi-<%= user.isVerified ? 'check-circle' : 'clock' %>"></i>
+                                                <%= user.isVerified ? 'Verified' : 'Pending' %>
+                                            </span>
+                                        <% } else { %>
+                                            <span class="badge bg-info">Active</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <small><%= new Date(user.createdAt).toLocaleDateString() %></small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <%= user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never' %>
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary btn-sm" onclick="viewUser('<%= user._id %>')" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-warning btn-sm" onclick="editUser('<%= user._id %>')" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </button>
+                                            <% if (user.role === 'volunteer' && !user.isVerified) { %>
+                                                <button class="btn btn-outline-success btn-sm" onclick="toggleVerification('<%= user._id %>', true)" title="Verify">
+                                                    <i class="bi bi-check"></i>
+                                                </button>
+                                            <% } %>
+                                            <button class="btn btn-outline-danger btn-sm" onclick="deleteUser('<%= user._id %>', '<%= user.name %>')" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <% if (totalPages > 1) { %>
+                    <div class="card-footer">
+                        <nav aria-label="Users pagination">
+                            <ul class="pagination pagination-sm mb-0 justify-content-center">
+                                <% for (let i = 1; i <= totalPages; i++) { %>
+                                    <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                        <a class="page-link" href="?page=<%= i %>&role=<%= filters.role || '' %>&verified=<%= filters.verified || '' %>&search=<%= filters.search || '' %>">
+                                            <%= i %>
+                                        </a>
+                                    </li>
+                                <% } %>
+                            </ul>
+                        </nav>
+                    </div>
+                <% } %>
+            <% } else { %>
+                <div class="text-center py-5">
+                    <i class="bi bi-people text-muted" style="font-size: 4rem;"></i>
+                    <h5 class="text-muted mt-3">No users found</h5>
+                    <p class="text-muted">Try adjusting your filters or add some users.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" id="editUserId">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-control" id="editUserName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="editUserEmail" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="editUserPhone" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Role</label>
+                                <select class="form-select" id="editUserRole">
+                                    <option value="elder">Elder</option>
+                                    <option value="volunteer">Volunteer</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12" id="volunteerFields" style="display: none;">
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="editUserVerified">
+                                    <label class="form-check-label" for="editUserVerified">
+                                        Verified Volunteer
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveUser()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.table td {
+    vertical-align: middle;
+}
+</style>
+
+<script>
+// User management JavaScript
+let selectedUsers = [];
+
+// Checkbox management
+document.getElementById('masterCheckbox').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+    });
+    updateSelectedUsers();
+});
+
+document.querySelectorAll('.user-checkbox').forEach(cb => {
+    cb.addEventListener('change', updateSelectedUsers);
+});
+
+function updateSelectedUsers() {
+    selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(cb => cb.value);
+    
+    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+    const bulkVerifyBtn = document.getElementById('bulkVerifyBtn');
+    
+    if (selectedUsers.length > 0) {
+        bulkDeleteBtn.style.display = 'inline-block';
+        bulkVerifyBtn.style.display = 'inline-block';
+    } else {
+        bulkDeleteBtn.style.display = 'none';
+        bulkVerifyBtn.style.display = 'none';
+    }
+}
+
+// View user details
+async function viewUser(userId) {
+    try {
+        const response = await fetch(`/admin/user/${userId}`);
+        const data = await response.json();
+        
+        if (data.user) {
+            const user = data.user;
+            let content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Personal Information</h6>
+                        <p><strong>Name:</strong> ${user.name}</p>
+                        <p><strong>Email:</strong> ${user.email}</p>
+                        <p><strong>Phone:</strong> ${user.phone}</p>
+                        <p><strong>Role:</strong> <span class="badge bg-primary">${user.role}</span></p>
+                        <p><strong>Joined:</strong> ${new Date(user.createdAt).toLocaleString()}</p>
+                        ${user.role === 'volunteer' ? `<p><strong>Verified:</strong> <span class="badge bg-${user.isVerified ? 'success' : 'warning'}">${user.isVerified ? 'Yes' : 'No'}</span></p>` : ''}
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Activity Summary</h6>
+            `;
+            
+            if (user.role === 'elder' && data.requests) {
+                content += `<p><strong>Total Requests:</strong> ${data.requests.length}</p>`;
+            } else if (user.role === 'volunteer' && data.tasks) {
+                content += `<p><strong>Total Tasks:</strong> ${data.tasks.length}</p>`;
+                content += `<p><strong>Completed Tasks:</strong> ${user.completedTasks || 0}</p>`;
+                content += `<p><strong>Rating:</strong> ${user.rating ? `${user.rating}/5` : 'No rating'}</p>`;
+            }
+            
+            content += `</div></div>`;
+            
+            document.getElementById('userDetailsContent').innerHTML = content;
+            new bootstrap.Modal(document.getElementById('userDetailsModal')).show();
+        }
+    } catch (error) {
+        showAlert('danger', 'Error loading user details');
+    }
+}
+
+// Edit user
+async function editUser(userId) {
+    try {
+        const response = await fetch(`/admin/user/${userId}`);
+        const data = await response.json();
+        
+        if (data.user) {
+            const user = data.user;
+            document.getElementById('editUserId').value = user._id;
+            document.getElementById('editUserName').value = user.name;
+            document.getElementById('editUserEmail').value = user.email;
+            document.getElementById('editUserPhone').value = user.phone;
+            document.getElementById('editUserRole').value = user.role;
+            
+            if (user.role === 'volunteer') {
+                document.getElementById('volunteerFields').style.display = 'block';
+                document.getElementById('editUserVerified').checked = user.isVerified;
+            } else {
+                document.getElementById('volunteerFields').style.display = 'none';
+            }
+            
+            new bootstrap.Modal(document.getElementById('editUserModal')).show();
+        }
+    } catch (error) {
+        showAlert('danger', 'Error loading user data');
+    }
+}
+
+// Save user changes
+async function saveUser() {
+    const userId = document.getElementById('editUserId').value;
+    const userData = {
+        name: document.getElementById('editUserName').value,
+        email: document.getElementById('editUserEmail').value,
+        phone: document.getElementById('editUserPhone').value,
+        role: document.getElementById('editUserRole').value,
+        isVerified: document.getElementById('editUserVerified').checked
+    };
+    
+    try {
+        const response = await fetch(`/admin/user/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('success', 'User updated successfully');
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            location.reload();
+        } else {
+            showAlert('danger', result.error || 'Error updating user');
+        }
+    } catch (error) {
+        showAlert('danger', 'Error updating user');
+    }
+}
+
+// Delete user
+async function deleteUser(userId, userName) {
+    if (confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+        try {
+            const response = await fetch(`/admin/user/${userId}`, {
+                method: 'DELETE'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showAlert('success', result.message);
+                location.reload();
+            } else {
+                showAlert('danger', result.error || 'Error deleting user');
+            }
+        } catch (error) {
+            showAlert('danger', 'Error deleting user');
+        }
+    }
+}
+
+// Toggle verification
+async function toggleVerification(userId, verified) {
+    try {
+        const response = await fetch(`/admin/verify-volunteer/${userId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ isVerified: verified })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('success', result.message);
+            location.reload();
+        } else {
+            showAlert('danger', result.error || 'Error updating verification');
+        }
+    } catch (error) {
+        showAlert('danger', 'Error updating verification');
+    }
+}
+
+// Bulk actions
+document.getElementById('bulkDeleteBtn').addEventListener('click', async function() {
+    if (selectedUsers.length === 0) return;
+    
+    if (confirm(`Are you sure you want to delete ${selectedUsers.length} selected users? This action cannot be undone.`)) {
+        try {
+            const response = await fetch('/admin/bulk-actions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', userIds: selectedUsers })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showAlert('success', `${result.affected} users deleted successfully`);
+                location.reload();
+            } else {
+                showAlert('danger', result.error || 'Error performing bulk delete');
+            }
+        } catch (error) {
+            showAlert('danger', 'Error performing bulk delete');
+        }
+    }
+});
+
+document.getElementById('bulkVerifyBtn').addEventListener('click', async function() {
+    if (selectedUsers.length === 0) return;
+    
+    try {
+        const response = await fetch('/admin/bulk-actions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'verify', userIds: selectedUsers })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('success', `${result.affected} volunteers verified successfully`);
+            location.reload();
+        } else {
+            showAlert('danger', result.error || 'Error performing bulk verification');
+        }
+    } catch (error) {
+        showAlert('danger', 'Error performing bulk verification');
+    }
+});
+
+// Show role-specific fields in edit modal
+document.getElementById('editUserRole').addEventListener('change', function() {
+    const volunteerFields = document.getElementById('volunteerFields');
+    if (this.value === 'volunteer') {
+        volunteerFields.style.display = 'block';
+    } else {
+        volunteerFields.style.display = 'none';
+    }
+});
+</script>

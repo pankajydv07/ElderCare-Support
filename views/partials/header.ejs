@@ -1,0 +1,21 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ElderCare Support Portal - Connecting senior citizens with compassionate volunteers">
+<meta name="keywords" content="elder care, volunteer, community support, senior citizens">
+<meta name="author" content="ElderCare Support Portal">
+
+<!-- Open Graph Tags -->
+<meta property="og:title" content="ElderCare Support Portal">
+<meta property="og:description" content="Connecting senior citizens with compassionate volunteers to build stronger communities">
+<meta property="og:type" content="website">
+<meta property="og:url" content="/">
+
+<!-- Favicon -->
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+
+<!-- Additional CSS for specific pages -->
+<% if (typeof pageCSS !== 'undefined') { %>
+    <% pageCSS.forEach(css => { %>
+        <link rel="stylesheet" href="<%= css %>">
+    <% }) %>
+<% } %>

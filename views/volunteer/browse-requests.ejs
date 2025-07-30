@@ -1,0 +1,146 @@
+<% layout('layouts/main') -%>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Browse Requests</h1>
+        <a href="/volunteer/my-tasks" class="btn btn-outline-primary">
+            <i class="bi bi-list-task"></i> My Tasks
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="/volunteer/browse-requests">
+                <div class="row">
+                    <div class="col-md-2">
+                        <select class="form-select" name="category">
+                            <option value="">All Categories</option>
+                            <% categories.forEach(cat => { %>
+                                <option value="<%= cat %>" <%= filters.category === cat ? 'selected' : '' %>>
+                                    <%= cat.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="urgency">
+                            <option value="">All Urgency Levels</option>
+                            <% urgencyLevels.forEach(level => { %>
+                                <option value="<%= level %>" <%= filters.urgency === level ? 'selected' : '' %>>
+                                    <%= level.charAt(0).toUpperCase() + level.slice(1) %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <select class="form-select" name="radius">
+                            <option value="5" <%= filters.radius == '5' ? 'selected' : '' %>>Within 5km</option>
+                            <option value="10" <%= filters.radius == '10' || !filters.radius ? 'selected' : '' %>>Within 10km</option>
+                            <option value="15" <%= filters.radius == '15' ? 'selected' : '' %>>Within 15km</option>
+                            <option value="25" <%= filters.radius == '25' ? 'selected' : '' %>>Within 25km</option>
+                            <option value="50" <%= filters.radius == '50' ? 'selected' : '' %>>Within 50km</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted small">
+                            <i class="bi bi-geo-alt"></i> Showing requests near your location
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Error Message -->
+    <% if (error) { %>
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> <%= error %>
+            <a href="/volunteer/profile" class="btn btn-sm btn-outline-primary ms-2">Update Profile</a>
+        </div>
+    <% } %>
+
+    <!-- Requests -->
+    <% if (requests.length > 0) { %>
+        <div class="row">
+            <% requests.forEach(request => { %>
+                <div class="col-lg-6 mb-4">
+                    <div class="card request-card h-100 urgency-<%= request.urgency %>">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0"><%= request.title %></h5>
+                                <div>
+                                    <% let urgencyClass = 'success'; %>
+                                    <% if (request.urgency === 'medium') urgencyClass = 'warning'; %>
+                                    <% if (request.urgency === 'high') urgencyClass = 'danger'; %>
+                                    <span class="badge bg-<%= urgencyClass %>">
+                                        <%= request.urgency.charAt(0).toUpperCase() + request.urgency.slice(1) %>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="badge bg-secondary mb-2">
+                                    <%= request.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                </span>
+                                <p class="card-text"><%= request.description %></p>
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-person"></i> <%= request.elder.name %> (Age: <%= request.elder.age %>)
+                                </small>
+                                <% if (request.elder.address && request.elder.address.street) { %>
+                                    <br><small class="text-muted">
+                                        <i class="bi bi-geo-alt"></i> <%= request.elder.address.city %>
+                                        <% if (request.distance !== undefined) { %>
+                                            <span class="badge bg-info ms-2">
+                                                <i class="bi bi-geo"></i> <%= request.distance %>km away
+                                            </span>
+                                        <% } %>
+                                    </small>
+                                <% } %>
+                                <% if (request.preferredDate) { %>
+                                    <br><small class="text-muted">
+                                        <i class="bi bi-calendar"></i> <%= new Date(request.preferredDate).toLocaleDateString() %>
+                                        <% if (request.preferredTime) { %>
+                                            at <%= request.preferredTime %>
+                                        <% } %>
+                                    </small>
+                                <% } %>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Posted <%= new Date(request.createdAt).toLocaleDateString() %>
+                                </small>
+                                <button class="btn btn-primary btn-sm" onclick="acceptRequest('<%= request._id %>')">
+                                    <i class="bi bi-hand-thumbs-up"></i> Accept
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } else { %>
+        <div class="text-center py-5">
+            <i class="bi bi-search text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">No requests found</h4>
+            <p class="text-muted">
+                <% if (error) { %>
+                    Please update your profile with a valid address to see nearby requests.
+                <% } else if (filters.category || filters.urgency || filters.radius) { %>
+                    Try adjusting your filters or increasing the radius to see more requests.
+                <% } else { %>
+                    There are currently no open requests within <%= filters.radius || 10 %>km of your location.
+                <% } %>
+            </p>
+        </div>
+    <% } %>
+</div>

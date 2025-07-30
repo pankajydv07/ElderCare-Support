@@ -1,0 +1,123 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-heart-fill"></i>
+            ElderCare Support Portal
+        </a>
+        
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto">
+                <% if (locals.user) { %>
+                    <% if (user.role === 'elder') { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/elder/dashboard">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/elder/create-request">Create Request</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/elder/my-requests">My Requests</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/elder/profile">Profile</a>
+                        </li>
+                    <% } else if (user.role === 'volunteer') { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/volunteer/dashboard">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/volunteer/browse-requests">Browse Requests</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/volunteer/my-tasks">My Tasks</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/volunteer/profile">Profile</a>
+                        </li>
+                    <% } else if (user.role === 'admin') { %>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/dashboard">Dashboard</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/manage-users">Manage Users</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/verify-volunteers">Verify Volunteers</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/manage-requests">Manage Requests</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/analytics">Analytics</a>
+                        </li>
+                    <% } %>
+                <% } %>
+            </ul>
+            
+            <ul class="navbar-nav">
+                <% if (locals.user) { %>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <%= user.name %>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><span class="dropdown-header">Role: <%= user.role.charAt(0).toUpperCase() + user.role.slice(1) %></span></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <button type="button" class="dropdown-item" onclick="SessionManager.logout()">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </button>
+                            </li>
+                        </ul>
+                    </li>
+                <% } else { %>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/login">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/register">Register</a>
+                    </li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<% if (locals.user) { %>
+<script>
+// Sync server session with localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof SessionManager !== 'undefined') {
+        SessionManager.setUser({
+            id: '<%= user.id %>',
+            name: '<%= user.name %>',
+            email: '<%= user.email %>',
+            role: '<%= user.role %>'
+        });
+    } else {
+        localStorage.setItem('eldercare_user', JSON.stringify({
+            id: '<%= user.id %>',
+            name: '<%= user.name %>',
+            email: '<%= user.email %>',
+            role: '<%= user.role %>'
+        }));
+    }
+});
+</script>
+<% } else { %>
+<script>
+// Clear localStorage if no server session
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof SessionManager !== 'undefined') {
+        SessionManager.clearUser();
+    } else {
+        localStorage.removeItem('eldercare_user');
+    }
+});
+</script>
+<% } %>

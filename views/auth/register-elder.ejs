@@ -1,0 +1,280 @@
+<% layout('layouts/main') -%>
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-person-heart text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="h4 mt-2">Elder Registration</h2>
+                        <p class="text-muted">Join our community to get support</p>
+                    </div>
+
+                    <% if (error) { %>
+                        <div class="alert alert-danger" role="alert">
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form method="POST" action="/register">
+                        <input type="hidden" name="role" value="elder">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="age" class="form-label">Age *</label>
+                                    <input type="number" class="form-control" id="age" name="age" min="18" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                            <div class="form-text">Must be at least 6 characters long</div>
+                        </div>
+
+                        <!-- Address Section with Google Maps -->
+                        <div class="mb-4">
+                            <label for="address" class="form-label">Your Address *</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="address" 
+                                   name="fullAddress" 
+                                   placeholder="Start typing your address..."
+                                   required>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                This helps us find volunteers near you. Your exact address is kept private.
+                            </div>
+                            
+                            <!-- Hidden fields for coordinates -->
+                            <input type="hidden" id="latitude" name="latitude">
+                            <input type="hidden" id="longitude" name="longitude">
+                            <input type="hidden" id="city" name="city">
+                            <input type="hidden" id="state" name="state">
+                            <input type="hidden" id="zipCode" name="zipCode">
+                            
+                            <!-- Map Display -->
+                            <div id="map" style="height: 250px; margin-top: 15px; border-radius: 8px; display: none;"></div>
+                            
+                            <!-- Address Confirmation -->
+                            <div id="addressConfirmation" class="mt-3" style="display: none;">
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle"></i>
+                                    <strong>Address Confirmed:</strong>
+                                    <span id="confirmedAddress"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">What type of help do you need? (Select all that apply)</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="needs" value="grocery-shopping" id="grocery">
+                                        <label class="form-check-label" for="grocery">
+                                            Grocery Shopping
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="needs" value="medicine-delivery" id="medicine">
+                                        <label class="form-check-label" for="medicine">
+                                            Medicine Delivery
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="needs" value="companionship" id="companionship">
+                                        <label class="form-check-label" for="companionship">
+                                            Companionship
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="needs" value="tech-support" id="tech">
+                                        <label class="form-check-label" for="tech">
+                                            Tech Support
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="needs" value="transportation" id="transport">
+                                        <label class="form-check-label" for="transport">
+                                            Transportation
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="needs" value="other" id="other">
+                                        <label class="form-check-label" for="other">
+                                            Other
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Register</button>
+                    </form>
+
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account? 
+                            <a href="/login" class="text-primary text-decoration-none">Sign in here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC2xQm4wEp_G-7J5Nr3HEO58kMBy56BcWE&libraries=places&callback=initAutocomplete" async defer></script>
+
+<script>
+let map, marker, autocomplete;
+
+function initAutocomplete() {
+    // Initialize autocomplete
+    autocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('address'),
+        {
+            types: ['address'],
+            componentRestrictions: { country: 'us' } // Adjust country as needed
+        }
+    );
+
+    // Listen for place selection
+    autocomplete.addListener('place_changed', onPlaceChanged);
+}
+
+function onPlaceChanged() {
+    const place = autocomplete.getPlace();
+    
+    if (!place.geometry || !place.geometry.location) {
+        document.getElementById('address').placeholder = 'Enter a valid address';
+        return;
+    }
+
+    // Get coordinates
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+    
+    // Fill hidden fields
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+    
+    // Extract address components
+    let city = '', state = '', zipCode = '';
+    for (const component of place.address_components) {
+        const componentType = component.types[0];
+        switch (componentType) {
+            case 'locality':
+                city = component.long_name;
+                break;
+            case 'administrative_area_level_1':
+                state = component.short_name;
+                break;
+            case 'postal_code':
+                zipCode = component.long_name;
+                break;
+        }
+    }
+    
+    document.getElementById('city').value = city;
+    document.getElementById('state').value = state;
+    document.getElementById('zipCode').value = zipCode;
+    
+    // Show map
+    showMap(lat, lng, place.formatted_address);
+    
+    // Show confirmation
+    document.getElementById('confirmedAddress').textContent = place.formatted_address;
+    document.getElementById('addressConfirmation').style.display = 'block';
+}
+
+function showMap(lat, lng, address) {
+    const mapDiv = document.getElementById('map');
+    mapDiv.style.display = 'block';
+    
+    map = new google.maps.Map(mapDiv, {
+        center: { lat: lat, lng: lng },
+        zoom: 15,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false
+    });
+    
+    marker = new google.maps.Marker({
+        position: { lat: lat, lng: lng },
+        map: map,
+        title: 'Your Location',
+        icon: {
+            url: 'data:image/svg+xml;base64,' + btoa(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#dc3545" viewBox="0 0 16 16">
+                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
+                    <circle cx="8" cy="6" r="2" fill="white"/>
+                </svg>
+            `),
+            scaledSize: new google.maps.Size(32, 32)
+        }
+    });
+    
+    const infoWindow = new google.maps.InfoWindow({
+        content: `<div style="padding: 10px;"><strong>Your Location</strong><br>${address}</div>`
+    });
+    
+    marker.addListener('click', () => {
+        infoWindow.open(map, marker);
+    });
+}
+
+// Form validation
+document.querySelector('form').addEventListener('submit', function(e) {
+    const lat = document.getElementById('latitude').value;
+    const lng = document.getElementById('longitude').value;
+    
+    if (!lat || !lng) {
+        e.preventDefault();
+        alert('Please select a valid address from the dropdown suggestions.');
+        document.getElementById('address').focus();
+        return false;
+    }
+});
+</script>
+
+<style>
+.pac-container {
+    z-index: 9999;
+}
+
+#map {
+    border: 2px solid #e9ecef;
+}
+
+.alert-success {
+    border-left: 4px solid #28a745;
+}
+</style>

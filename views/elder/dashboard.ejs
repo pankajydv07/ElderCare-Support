@@ -1,0 +1,138 @@
+<% layout('layouts/main') -%>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Elder Dashboard</h1>
+        <div>
+            <a href="/elder/profile" class="btn btn-outline-primary me-2">
+                <i class="bi bi-person-gear"></i> My Profile
+            </a>
+            <a href="/elder/create-request" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Create New Request
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="h4 mb-0"><%= stats.totalRequests %></div>
+                            <div>Total Requests</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-list-task fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="h4 mb-0"><%= stats.activeRequests %></div>
+                            <div>Active Requests</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-clock fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="h4 mb-0"><%= stats.completedRequests %></div>
+                            <div>Completed</div>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-check-circle fs-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Requests -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Recent Requests</h5>
+            <a href="/elder/my-requests" class="btn btn-sm btn-outline-primary">View All</a>
+        </div>
+        <div class="card-body">
+            <% if (requests.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Volunteer</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% requests.forEach(request => { %>
+                                <tr>
+                                    <td><%= request.title %></td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <%= request.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% let statusClass = 'secondary'; %>
+                                        <% if (request.status === 'completed') statusClass = 'success'; %>
+                                        <% if (request.status === 'in-progress') statusClass = 'warning'; %>
+                                        <% if (request.status === 'assigned') statusClass = 'info'; %>
+                                        <span class="badge bg-<%= statusClass %>">
+                                            <%= request.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% if (request.volunteer) { %>
+                                            <%= request.volunteer.name %>
+                                            <% if (request.volunteer.rating > 0) { %>
+                                                <small class="text-muted">
+                                                    <i class="bi bi-star-fill text-warning"></i>
+                                                    <%= request.volunteer.rating %>
+                                                </small>
+                                            <% } %>
+                                        <% } else { %>
+                                            <span class="text-muted">Not assigned</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= new Date(request.createdAt).toLocaleDateString() %></td>
+                                    <td>
+                                        <% if (request.status === 'completed' && request.volunteer) { %>
+                                            <a href="/elder/feedback/<%= request._id %>" class="btn btn-sm btn-success">
+                                                <i class="bi bi-star"></i> Feedback
+                                            </a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <div class="text-center py-4">
+                    <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                    <p class="text-muted mt-2">No requests yet. Create your first request to get started!</p>
+                    <a href="/elder/create-request" class="btn btn-primary">Create Request</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>

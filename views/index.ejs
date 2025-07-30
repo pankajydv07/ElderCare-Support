@@ -1,0 +1,145 @@
+<% layout('layouts/main') -%>
+
+<div class="hero-section bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">ElderCare Support Portal</h1>
+                <p class="lead mb-4">
+                    Connecting senior citizens with compassionate volunteers to build stronger, more caring communities. 
+                    Get help with daily tasks or become a volunteer to make a difference.
+                </p>
+                <div class="d-flex gap-3" id="hero-buttons">
+                    <% if (locals.user) { %>
+                        <% 
+                        let dashboardUrl = '/';
+                        switch(user.role) {
+                            case 'elder': dashboardUrl = '/elder/dashboard'; break;
+                            case 'volunteer': dashboardUrl = '/volunteer/dashboard'; break;
+                            case 'admin': dashboardUrl = '/admin/dashboard'; break;
+                        }
+                        %>
+                        <a href="<%= dashboardUrl %>" class="btn btn-light btn-lg">Go to Dashboard</a>
+                        <button type="button" class="btn btn-outline-light btn-lg" onclick="SessionManager.logout()">Logout</button>
+                    <% } else { %>
+                        <a href="/register" class="btn btn-light btn-lg">Get Started</a>
+                        <a href="/login" class="btn btn-outline-light btn-lg">Sign In</a>
+                    <% } %>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="text-center">
+                    <i class="bi bi-people-fill display-1"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto text-center mb-5">
+            <h2 class="h1 mb-4">How It Works</h2>
+            <p class="lead">Our platform makes it easy for seniors to get help and for volunteers to make a difference.</p>
+        </div>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-person-plus-fill fs-2"></i>
+                    </div>
+                    <h3 class="h4 mb-3">1. Register</h3>
+                    <p>Create your account as either a senior seeking help or a volunteer ready to assist.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-search fs-2"></i>
+                    </div>
+                    <h3 class="h4 mb-3">2. Connect</h3>
+                    <p>Seniors post requests for help, volunteers browse and accept tasks that match their availability.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body text-center p-4">
+                    <div class="feature-icon bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3">
+                        <i class="bi bi-heart-fill fs-2"></i>
+                    </div>
+                    <h3 class="h4 mb-3">3. Help</h3>
+                    <p>Volunteers provide assistance and build meaningful connections with community members.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="h1 mb-4">Services We Support</h2>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-basket2-fill text-primary me-3 fs-4"></i>
+                            <span>Grocery Shopping</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-capsule text-primary me-3 fs-4"></i>
+                            <span>Medicine Delivery</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-people text-primary me-3 fs-4"></i>
+                            <span>Companionship</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-laptop text-primary me-3 fs-4"></i>
+                            <span>Tech Support</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-car-front-fill text-primary me-3 fs-4"></i>
+                            <span>Transportation</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-three-dots text-primary me-3 fs-4"></i>
+                            <span>And More...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Additional localStorage management for index page
+document.addEventListener('DOMContentLoaded', function() {
+    // Update hero buttons based on localStorage if SessionManager is available
+    if (typeof SessionManager !== 'undefined') {
+        // Set a small delay to ensure SessionManager has loaded
+        setTimeout(() => {
+            SessionManager.updateIndexPage();
+        }, 100);
+    }
+});
+</script>

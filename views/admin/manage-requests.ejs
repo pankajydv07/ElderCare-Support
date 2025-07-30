@@ -1,0 +1,328 @@
+<% layout('layouts/main') -%>
+
+<div class="container mt-4">
+    <h1 class="h3 mb-4">Manage Requests</h1>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="/admin/manage-requests">
+                <div class="row">
+                    <div class="col-md-4">
+                        <select class="form-select" name="status">
+                            <option value="">All Statuses</option>
+                            <% statuses.forEach(status => { %>
+                                <option value="<%= status %>" <%= filters.status === status ? 'selected' : '' %>>
+                                    <%= status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" name="category">
+                            <option value="">All Categories</option>
+                            <% categories.forEach(cat => { %>
+                                <option value="<%= cat %>" <%= filters.category === cat ? 'selected' : '' %>>
+                                    <%= cat.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                </option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <% if (requests.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Elder</th>
+                                <th>Volunteer</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% requests.forEach(request => { %>
+                                <tr>
+                                    <td>
+                                        <strong><%= request.title %></strong>
+                                        <% if (request.urgency === 'high') { %>
+                                            <span class="badge bg-danger ms-2">High Priority</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong><%= request.elder.name %></strong>
+                                            <br><small class="text-muted"><%= request.elder.email %></small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <% if (request.volunteer) { %>
+                                            <div>
+                                                <strong><%= request.volunteer.name %></strong>
+                                                <br><small class="text-muted"><%= request.volunteer.email %></small>
+                                            </div>
+                                        <% } else { %>
+                                            <span class="text-muted">Unassigned</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <%= request.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% let statusClass = 'secondary'; %>
+                                        <% if (request.status === 'completed') statusClass = 'success'; %>
+                                        <% if (request.status === 'in-progress') statusClass = 'warning'; %>
+                                        <% if (request.status === 'assigned') statusClass = 'info'; %>
+                                        <% if (request.status === 'open') statusClass = 'primary'; %>
+                                        <span class="badge bg-<%= statusClass %>">
+                                            <%= request.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                        </span>
+                                    </td>
+                                    <td><%= new Date(request.createdAt).toLocaleDateString() %></td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary view-request-btn" 
+                                                data-bs-toggle="collapse" 
+                                                data-bs-target="#requestDetails<%= request._id %>"
+                                                aria-expanded="false"
+                                                aria-controls="requestDetails<%= request._id %>">
+                                            <i class="bi bi-eye"></i> <span class="toggle-text">View</span>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Expandable Request Details Row -->
+                                <tr class="collapse-row">
+                                    <td colspan="7" class="p-0">
+                                        <div class="collapse" id="requestDetails<%= request._id %>">
+                                            <div class="card border-0 bg-light">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <h6 class="text-primary mb-3">
+                                                                <i class="bi bi-file-text me-2"></i>Request Details
+                                                            </h6>
+                                                            <div class="mb-3">
+                                                                <strong>Description:</strong>
+                                                                <p class="mt-1 mb-0"><%= request.description %></p>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <strong>Category:</strong>
+                                                                <span class="badge bg-secondary ms-2">
+                                                                    <%= request.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                                                </span>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <strong>Urgency:</strong>
+                                                                <span class="badge bg-<%= request.urgency === 'high' ? 'danger' : request.urgency === 'medium' ? 'warning' : 'info' %> ms-2">
+                                                                    <%= request.urgency.charAt(0).toUpperCase() + request.urgency.slice(1) %>
+                                                                </span>
+                                                            </div>
+                                                            <% if (request.location && request.location.address) { %>
+                                                                <div class="mb-3">
+                                                                    <strong>Location:</strong>
+                                                                    <p class="mt-1 mb-0">
+                                                                        <i class="bi bi-geo-alt text-muted"></i>
+                                                                        <%= request.location.address %>, <%= request.location.city %>
+                                                                    </p>
+                                                                </div>
+                                                            <% } %>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <h6 class="text-primary mb-3">
+                                                                <i class="bi bi-people me-2"></i>Assignment Details
+                                                            </h6>
+                                                            <div class="mb-3">
+                                                                <strong>Elder:</strong>
+                                                                <div class="mt-1">
+                                                                    <i class="bi bi-person text-muted"></i>
+                                                                    <%= request.elder.name %><br>
+                                                                    <small class="text-muted">
+                                                                        <i class="bi bi-envelope text-muted"></i>
+                                                                        <%= request.elder.email %>
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <strong>Volunteer:</strong>
+                                                                <div class="mt-1">
+                                                                    <% if (request.volunteer) { %>
+                                                                        <i class="bi bi-person-check text-muted"></i>
+                                                                        <%= request.volunteer.name %><br>
+                                                                        <small class="text-muted">
+                                                                            <i class="bi bi-envelope text-muted"></i>
+                                                                            <%= request.volunteer.email %>
+                                                                        </small>
+                                                                    <% } else { %>
+                                                                        <span class="text-muted">
+                                                                            <i class="bi bi-person-x text-muted"></i>
+                                                                            Unassigned
+                                                                        </span>
+                                                                    <% } %>
+                                                                </div>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <strong>Status:</strong>
+                                                                <% let detailStatusClass = 'secondary'; %>
+                                                                <% if (request.status === 'completed') detailStatusClass = 'success'; %>
+                                                                <% if (request.status === 'in-progress') detailStatusClass = 'warning'; %>
+                                                                <% if (request.status === 'assigned') detailStatusClass = 'info'; %>
+                                                                <% if (request.status === 'open') detailStatusClass = 'primary'; %>
+                                                                <span class="badge bg-<%= detailStatusClass %> ms-2">
+                                                                    <%= request.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                                                </span>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <strong>Created:</strong>
+                                                                <p class="mt-1 mb-0">
+                                                                    <i class="bi bi-calendar text-muted"></i>
+                                                                    <%= new Date(request.createdAt).toLocaleString() %>
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <% if (request.specialInstructions) { %>
+                                                        <hr class="my-3">
+                                                        <div>
+                                                            <h6 class="text-primary mb-2">
+                                                                <i class="bi bi-info-circle me-2"></i>Special Instructions
+                                                            </h6>
+                                                            <p class="mb-0 p-3 bg-white border rounded">
+                                                                <%= request.specialInstructions %>
+                                                            </p>
+                                                        </div>
+                                                    <% } %>
+                                                    <hr class="my-3">
+                                                    <div class="d-flex justify-content-end">
+                                                        <button class="btn btn-outline-secondary btn-sm" 
+                                                                data-bs-toggle="collapse" 
+                                                                data-bs-target="#requestDetails<%= request._id %>">
+                                                            <i class="bi bi-chevron-up me-1"></i>Collapse
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <div class="text-center py-5">
+                    <i class="bi bi-clipboard-data text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted mt-3">No requests found</h4>
+                    <p class="text-muted">Requests will appear here as they are created.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Expandable row styles */
+    .view-request-btn {
+        transition: all 0.2s ease;
+    }
+    
+    .view-request-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .collapse-row {
+        border: none !important;
+    }
+    
+    .collapse-row td {
+        border: none !important;
+        padding: 0 !important;
+    }
+    
+    .collapse .card {
+        border-radius: 0;
+        border-left: 4px solid var(--bs-primary);
+        margin: 0;
+        box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+    }
+    
+    .collapse .card-body {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    }
+    
+    /* Smooth collapse animation */
+    .collapsing {
+        transition: height 0.3s ease;
+    }
+    
+    /* Icon rotation for expanded state */
+    .view-request-btn[aria-expanded="true"] .bi-eye:before {
+        content: "\f287"; /* bi-eye-slash */
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle button text changes for collapse/expand
+        const collapseElements = document.querySelectorAll('.collapse');
+        
+        collapseElements.forEach(function(collapseEl) {
+            const targetButton = document.querySelector(`[data-bs-target="#${collapseEl.id}"]`);
+            const toggleText = targetButton?.querySelector('.toggle-text');
+            
+            if (targetButton && toggleText) {
+                collapseEl.addEventListener('show.bs.collapse', function() {
+                    toggleText.textContent = 'Hide';
+                    targetButton.classList.add('active');
+                });
+                
+                collapseEl.addEventListener('hide.bs.collapse', function() {
+                    toggleText.textContent = 'View';
+                    targetButton.classList.remove('active');
+                });
+            }
+        });
+        
+        // Smooth scrolling when expanding
+        collapseElements.forEach(function(collapseEl) {
+            collapseEl.addEventListener('shown.bs.collapse', function() {
+                // Scroll the expanded content into view smoothly
+                this.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'nearest',
+                    inline: 'nearest' 
+                });
+            });
+        });
+        
+        // Close other expanded rows when opening a new one (accordion behavior)
+        collapseElements.forEach(function(collapseEl) {
+            collapseEl.addEventListener('show.bs.collapse', function() {
+                // Close all other open collapse elements
+                collapseElements.forEach(function(otherEl) {
+                    if (otherEl !== collapseEl && otherEl.classList.contains('show')) {
+                        const otherCollapse = new bootstrap.Collapse(otherEl, {
+                            toggle: false
+                        });
+                        otherCollapse.hide();
+                    }
+                });
+            });
+        });
+    });
+</script>

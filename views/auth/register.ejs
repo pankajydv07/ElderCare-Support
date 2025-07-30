@@ -1,0 +1,674 @@
+<% layout('layouts/main') -%>
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-person-plus text-primary" style="font-size: 3rem;"></i>
+                        <h2 class="h4 mt-2">Join ElderCare Portal</h2>
+                        <p class="text-muted">Choose your role to get started</p>
+                    </div>
+
+                    <% if (error) { %>
+                        <div class="alert alert-danger" role="alert">
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form method="POST" action="/register" id="registerForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">I want to register as:</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="role" id="elder" value="elder" required>
+                                        <label class="form-check-label" for="elder">
+                                            <strong>Senior Citizen</strong><br>
+                                            <small class="text-muted">I need assistance with daily tasks</small>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="role" id="volunteer" value="volunteer" required>
+                                        <label class="form-check-label" for="volunteer">
+                                            <strong>Volunteer</strong><br>
+                                            <small class="text-muted">I want to help senior citizens</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Elder-specific fields -->
+                        <div id="elderFields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="age" class="form-label">Age</label>
+                                <input type="number" class="form-control" id="age" name="age" min="18">
+                            </div>
+                            
+                            <!-- Address for Elder -->
+                            <div class="mb-3">
+                                <label for="elderAddress" class="form-label">Your Address *</label>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control address-input" 
+                                           id="elderAddress" 
+                                           name="fullAddress" 
+                                           placeholder="Start typing your address..."
+                                           disabled>
+                                    <button type="button" class="btn btn-outline-secondary" id="detectElderLocation" disabled>
+                                        <i class="bi bi-geo-alt-fill"></i> Detect My Location
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i> 
+                                    This helps us find volunteers near you. Your exact address is kept private.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Volunteer-specific fields -->
+                        <div id="volunteerFields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="bio" class="form-label">Tell us about yourself</label>
+                                <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="Brief description about yourself and why you want to volunteer"></textarea>
+                            </div>
+                            
+                            <!-- Address for Volunteer -->
+                            <div class="mb-3">
+                                <label for="volunteerAddress" class="form-label">Your Address *</label>
+                                <div class="input-group">
+                                    <input type="text" 
+                                           class="form-control address-input" 
+                                           id="volunteerAddress" 
+                                           name="fullAddress" 
+                                           placeholder="Start typing your address..."
+                                           disabled>
+                                    <button type="button" class="btn btn-outline-secondary" id="detectVolunteerLocation" disabled>
+                                        <i class="bi bi-geo-alt-fill"></i> Detect My Location
+                                    </button>
+                                </div>
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i> 
+                                    This helps us match you with elders in your area.
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="serviceableLocations" class="form-label">Areas you can serve (comma-separated)</label>
+                                <input type="text" class="form-control" id="serviceableLocations" name="serviceableLocations" placeholder="e.g., Downtown, Midtown, Suburbs">
+                            </div>
+                        </div>
+
+                        <!-- Hidden fields for coordinates -->
+                        <input type="hidden" id="latitude" name="latitude">
+                        <input type="hidden" id="longitude" name="longitude">
+                        <input type="hidden" id="city" name="city">
+                        <input type="hidden" id="state" name="state">
+                        <input type="hidden" id="zipCode" name="zipCode">
+                        
+                        <!-- Map Display -->
+                        <div id="mapContainer" style="display: none;">
+                            <div class="mb-3">
+                                <label for="mapSearch" class="form-label">
+                                    <i class="bi bi-search"></i> Search on Map
+                                </label>
+                                <input type="text" class="form-control" id="mapSearch" placeholder="Search for a location on the map...">
+                            </div>
+                            
+                            <div id="map" style="height: 300px; margin-bottom: 15px; border-radius: 8px; border: 2px solid #e9ecef; cursor: crosshair;"></div>
+                            
+                            <div class="text-center mb-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-hand-index"></i> Click on the map to pinpoint your exact location
+                                </small>
+                            </div>
+                            
+                            <!-- Address Confirmation -->
+                            <div id="addressConfirmation" style="display: none;">
+                                <div class="alert alert-success">
+                                    <i class="bi bi-check-circle"></i>
+                                    <strong>Address Confirmed:</strong>
+                                    <span id="confirmedAddress"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Register</button>
+                    </form>
+
+                    <div class="text-center">
+                        <p class="mb-0">Already have an account? 
+                            <a href="/login" class="text-primary text-decoration-none">Sign in here</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC2xQm4wEp_G-7J5Nr3HEO58kMBy56BcWE&libraries=places&callback=initAutocomplete" async defer></script>
+
+<script>
+let map, marker, autocomplete, mapSearchBox;
+let currentAddressInput = null;
+let geocoder;
+
+function initAutocomplete() {
+    // Initialize geocoder for reverse geocoding
+    geocoder = new google.maps.Geocoder();
+    
+    // Will be called after Google Maps loads
+    setupAddressAutocomplete();
+    setupLocationDetection();
+}
+
+function setupAddressAutocomplete() {
+    const elderAddressInput = document.getElementById('elderAddress');
+    const volunteerAddressInput = document.getElementById('volunteerAddress');
+    
+    // Setup autocomplete for both address inputs
+    [elderAddressInput, volunteerAddressInput].forEach(input => {
+        if (input) {
+            const autocompleteInstance = new google.maps.places.Autocomplete(input, {
+                types: ['address'],
+                componentRestrictions: { country: 'us' }
+            });
+            
+            autocompleteInstance.addListener('place_changed', () => onPlaceChanged(input, autocompleteInstance));
+        }
+    });
+}
+
+function setupLocationDetection() {
+    // Setup detect location buttons
+    const detectElderBtn = document.getElementById('detectElderLocation');
+    const detectVolunteerBtn = document.getElementById('detectVolunteerLocation');
+    
+    if (detectElderBtn) {
+        detectElderBtn.addEventListener('click', () => detectCurrentLocation('elder'));
+    }
+    if (detectVolunteerBtn) {
+        detectVolunteerBtn.addEventListener('click', () => detectCurrentLocation('volunteer'));
+    }
+}
+
+function detectCurrentLocation(type) {
+    const button = document.getElementById(`detect${type.charAt(0).toUpperCase() + type.slice(1)}Location`);
+    const input = document.getElementById(`${type}Address`);
+    
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by this browser.');
+        return;
+    }
+    
+    // Show loading state
+    button.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> Detecting...';
+    button.disabled = true;
+    
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // Reverse geocode to get address
+            geocoder.geocode({ location: { lat, lng } }, (results, status) => {
+                if (status === 'OK' && results[0]) {
+                    const address = results[0].formatted_address;
+                    input.value = address;
+                    
+                    // Set the current input for processing
+                    currentAddressInput = input;
+                    
+                    // Process the location
+                    processLocation(lat, lng, address, results[0]);
+                    
+                    // Restore button
+                    button.innerHTML = '<i class="bi bi-geo-alt-fill"></i> Detect My Location';
+                    button.disabled = false;
+                } else {
+                    alert('Unable to retrieve your address. Please enter it manually.');
+                    button.innerHTML = '<i class="bi bi-geo-alt-fill"></i> Detect My Location';
+                    button.disabled = false;
+                }
+            });
+        },
+        (error) => {
+            let errorMessage = 'Error getting your location: ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage += 'Location access denied by user.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage += 'Location information unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage += 'Location request timed out.';
+                    break;
+                default:
+                    errorMessage += 'Unknown error.';
+                    break;
+            }
+            alert(errorMessage);
+            button.innerHTML = '<i class="bi bi-geo-alt-fill"></i> Detect My Location';
+            button.disabled = false;
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 300000
+        }
+    );
+}
+
+function onPlaceChanged(inputElement, autocompleteInstance) {
+    const place = autocompleteInstance.getPlace();
+    
+    if (!place.geometry || !place.geometry.location) {
+        inputElement.placeholder = 'Enter a valid address';
+        return;
+    }
+
+    currentAddressInput = inputElement;
+    
+    // Get coordinates
+    const lat = place.geometry.location.lat();
+    const lng = place.geometry.location.lng();
+    
+    processLocation(lat, lng, place.formatted_address, place);
+}
+
+function processLocation(lat, lng, address, place) {
+    // Fill hidden fields
+    document.getElementById('latitude').value = lat;
+    document.getElementById('longitude').value = lng;
+    
+    // Extract address components
+    let city = '', state = '', zipCode = '';
+    const components = place.address_components || [];
+    
+    for (const component of components) {
+        const componentType = component.types[0];
+        switch (componentType) {
+            case 'locality':
+                city = component.long_name;
+                break;
+            case 'administrative_area_level_1':
+                state = component.short_name;
+                break;
+            case 'postal_code':
+                zipCode = component.long_name;
+                break;
+        }
+    }
+    
+    document.getElementById('city').value = city;
+    document.getElementById('state').value = state;
+    document.getElementById('zipCode').value = zipCode;
+    
+    // Show map
+    showInteractiveMap(lat, lng, address);
+    
+    // Show confirmation
+    document.getElementById('confirmedAddress').textContent = address;
+    document.getElementById('addressConfirmation').style.display = 'block';
+}
+
+function showInteractiveMap(lat, lng, address) {
+    const mapContainer = document.getElementById('mapContainer');
+    const mapDiv = document.getElementById('map');
+    
+    mapContainer.style.display = 'block';
+    
+    map = new google.maps.Map(mapDiv, {
+        center: { lat: lat, lng: lng },
+        zoom: 15,
+        mapTypeControl: true,
+        streetViewControl: true,
+        fullscreenControl: true
+    });
+    
+    // Setup map search
+    setupMapSearch();
+    
+    // Add click listener to map for pinpointing
+    map.addListener('click', (event) => {
+        const clickedLat = event.latLng.lat();
+        const clickedLng = event.latLng.lng();
+        
+        // Update marker position
+        updateMarkerPosition(clickedLat, clickedLng);
+        
+        // Reverse geocode the clicked location
+        geocoder.geocode({ location: { lat: clickedLat, lng: clickedLng } }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                const newAddress = results[0].formatted_address;
+                
+                // Update the input field
+                if (currentAddressInput) {
+                    currentAddressInput.value = newAddress;
+                }
+                
+                // Update coordinates
+                document.getElementById('latitude').value = clickedLat;
+                document.getElementById('longitude').value = clickedLng;
+                
+                // Update confirmation
+                document.getElementById('confirmedAddress').textContent = newAddress;
+                
+                // Extract and update address components
+                processLocation(clickedLat, clickedLng, newAddress, results[0]);
+            }
+        });
+    });
+    
+    // Create initial marker
+    updateMarkerPosition(lat, lng, address);
+}
+
+function setupMapSearch() {
+    const searchBox = document.getElementById('mapSearch');
+    
+    if (!searchBox || !map) return;
+    
+    const searchAutocomplete = new google.maps.places.Autocomplete(searchBox, {
+        types: ['address'],
+        componentRestrictions: { country: 'us' }
+    });
+    
+    searchAutocomplete.bindTo('bounds', map);
+    
+    searchAutocomplete.addListener('place_changed', () => {
+        const place = searchAutocomplete.getPlace();
+        
+        if (!place.geometry || !place.geometry.location) {
+            return;
+        }
+        
+        const lat = place.geometry.location.lat();
+        const lng = place.geometry.location.lng();
+        
+        // Center map on searched location
+        map.setCenter({ lat, lng });
+        map.setZoom(17);
+        
+        // Update marker and form
+        updateMarkerPosition(lat, lng);
+        
+        if (currentAddressInput) {
+            currentAddressInput.value = place.formatted_address;
+        }
+        
+        processLocation(lat, lng, place.formatted_address, place);
+    });
+}
+
+function updateMarkerPosition(lat, lng, address = null) {
+    // Remove existing marker
+    if (marker) {
+        marker.setMap(null);
+    }
+    
+    // Different icons for elder vs volunteer
+    const isElder = currentAddressInput && currentAddressInput.id === 'elderAddress';
+    const iconColor = isElder ? '#dc3545' : '#28a745';
+    const iconTitle = isElder ? 'Your Location' : 'Your Service Area';
+    
+    marker = new google.maps.Marker({
+        position: { lat: lat, lng: lng },
+        map: map,
+        title: iconTitle,
+        draggable: true,
+        icon: {
+            url: 'data:image/svg+xml;base64,' + btoa(`
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="${iconColor}" viewBox="0 0 16 16">
+                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10z"/>
+                    <circle cx="8" cy="6" r="2" fill="white"/>
+                </svg>
+            `),
+            scaledSize: new google.maps.Size(32, 32)
+        }
+    });
+    
+    // Add drag listener for fine-tuning
+    marker.addListener('dragend', (event) => {
+        const newLat = event.latLng.lat();
+        const newLng = event.latLng.lng();
+        
+        // Update coordinates
+        document.getElementById('latitude').value = newLat;
+        document.getElementById('longitude').value = newLng;
+        
+        // Reverse geocode
+        geocoder.geocode({ location: { lat: newLat, lng: newLng } }, (results, status) => {
+            if (status === 'OK' && results[0]) {
+                const newAddress = results[0].formatted_address;
+                
+                if (currentAddressInput) {
+                    currentAddressInput.value = newAddress;
+                }
+                
+                document.getElementById('confirmedAddress').textContent = newAddress;
+                processLocation(newLat, newLng, newAddress, results[0]);
+            }
+        });
+    });
+    
+    const infoWindow = new google.maps.InfoWindow({
+        content: `<div style="padding: 10px;">
+                    <strong>${iconTitle}</strong><br>
+                    ${address || 'Click and drag to adjust position'}<br>
+                    <small class="text-muted">Drag marker to fine-tune location</small>
+                  </div>`
+    });
+    
+    marker.addListener('click', () => {
+        infoWindow.open(map, marker);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const elderRadio = document.getElementById('elder');
+    const volunteerRadio = document.getElementById('volunteer');
+    const elderFields = document.getElementById('elderFields');
+    const volunteerFields = document.getElementById('volunteerFields');
+    const elderAddress = document.getElementById('elderAddress');
+    const volunteerAddress = document.getElementById('volunteerAddress');
+    const detectElderBtn = document.getElementById('detectElderLocation');
+    const detectVolunteerBtn = document.getElementById('detectVolunteerLocation');
+    const mapContainer = document.getElementById('mapContainer');
+
+    function toggleFields() {
+        // Hide map when switching roles
+        mapContainer.style.display = 'none';
+        document.getElementById('addressConfirmation').style.display = 'none';
+        
+        // Clear map search
+        const mapSearch = document.getElementById('mapSearch');
+        if (mapSearch) mapSearch.value = '';
+        
+        // Clear coordinates
+        document.getElementById('latitude').value = '';
+        document.getElementById('longitude').value = '';
+        
+        if (elderRadio.checked) {
+            elderFields.style.display = 'block';
+            volunteerFields.style.display = 'none';
+            document.getElementById('age').required = true;
+            document.getElementById('bio').required = false;
+            
+            // Enable elder address and button, disable volunteer
+            elderAddress.disabled = false;
+            elderAddress.required = true;
+            detectElderBtn.disabled = false;
+            
+            volunteerAddress.disabled = true;
+            volunteerAddress.required = false;
+            volunteerAddress.value = '';
+            detectVolunteerBtn.disabled = true;
+            
+        } else if (volunteerRadio.checked) {
+            elderFields.style.display = 'none';
+            volunteerFields.style.display = 'block';
+            document.getElementById('age').required = false;
+            document.getElementById('bio').required = true;
+            
+            // Enable volunteer address and button, disable elder
+            volunteerAddress.disabled = false;
+            volunteerAddress.required = true;
+            detectVolunteerBtn.disabled = false;
+            
+            elderAddress.disabled = true;
+            elderAddress.required = false;
+            elderAddress.value = '';
+            detectElderBtn.disabled = true;
+        }
+        
+        // Re-setup autocomplete after enabling/disabling inputs
+        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+            setupAddressAutocomplete();
+        }
+    }
+
+    elderRadio.addEventListener('change', toggleFields);
+    volunteerRadio.addEventListener('change', toggleFields);
+    
+    // Form validation
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+        
+        if (!lat || !lng) {
+            e.preventDefault();
+            alert('Please select a valid address from the dropdown suggestions or use location detection.');
+            
+            // Focus on the appropriate address field
+            if (elderRadio.checked) {
+                elderAddress.focus();
+            } else if (volunteerRadio.checked) {
+                volunteerAddress.focus();
+            }
+            return false;
+        }
+    });
+});
+</script>
+
+<style>
+.pac-container {
+    z-index: 9999;
+}
+
+.alert-success {
+    border-left: 4px solid #28a745;
+}
+
+.address-input:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.6;
+}
+
+/* Loading animation for detect location button */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spin {
+    animation: spin 1s linear infinite;
+}
+
+/* Map styling */
+#map {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    transition: border-color 0.3s ease;
+}
+
+#map:hover {
+    border-color: #007bff;
+}
+
+/* Map search styling */
+#mapSearch {
+    border-radius: 20px;
+    padding-left: 40px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%236c757d' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: 12px center;
+    background-size: 16px;
+}
+
+/* Location detect button styling */
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+/* Input group styling */
+.input-group .form-control:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group .btn:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* Map container animation */
+#mapContainer {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Address confirmation styling */
+#addressConfirmation {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+</style>

@@ -1,0 +1,113 @@
+<% layout('layouts/main') -%>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Requests</h1>
+        <a href="/elder/create-request" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> New Request
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <% if (requests.length > 0) { %>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Urgency</th>
+                                <th>Volunteer</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% requests.forEach(request => { %>
+                                <tr class="urgency-<%= request.urgency %>">
+                                    <td>
+                                        <strong><%= request.title %></strong>
+                                        <% if (request.preferredDate) { %>
+                                            <br><small class="text-muted">
+                                                <i class="bi bi-calendar"></i> <%= new Date(request.preferredDate).toLocaleDateString() %>
+                                                <% if (request.preferredTime) { %>
+                                                    at <%= request.preferredTime %>
+                                                <% } %>
+                                            </small>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">
+                                            <%= request.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% let statusClass = 'secondary'; %>
+                                        <% if (request.status === 'completed') statusClass = 'success'; %>
+                                        <% if (request.status === 'in-progress') statusClass = 'warning'; %>
+                                        <% if (request.status === 'assigned') statusClass = 'info'; %>
+                                        <% if (request.status === 'open') statusClass = 'primary'; %>
+                                        <span class="badge bg-<%= statusClass %>">
+                                            <%= request.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% let urgencyClass = 'success'; %>
+                                        <% if (request.urgency === 'medium') urgencyClass = 'warning'; %>
+                                        <% if (request.urgency === 'high') urgencyClass = 'danger'; %>
+                                        <span class="badge bg-<%= urgencyClass %>">
+                                            <%= request.urgency.charAt(0).toUpperCase() + request.urgency.slice(1) %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <% if (request.volunteer) { %>
+                                            <div>
+                                                <strong><%= request.volunteer.name %></strong>
+                                                <% if (request.volunteer.phone) { %>
+                                                    <br><small class="text-muted">
+                                                        <i class="bi bi-phone"></i> <%= request.volunteer.phone %>
+                                                    </small>
+                                                <% } %>
+                                                <% if (request.volunteer.rating > 0) { %>
+                                                    <br><small>
+                                                        <i class="bi bi-star-fill text-warning"></i>
+                                                        <%= request.volunteer.rating %>
+                                                    </small>
+                                                <% } %>
+                                            </div>
+                                        <% } else { %>
+                                            <span class="text-muted">Waiting for volunteer</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= new Date(request.createdAt).toLocaleDateString() %></td>
+                                    <td>
+                                        <% if (request.status === 'completed' && request.volunteer) { %>
+                                            <a href="/elder/feedback/<%= request._id %>" class="btn btn-sm btn-success">
+                                                <i class="bi bi-star"></i> Feedback
+                                            </a>
+                                        <% } else { %>
+                                            <button class="btn btn-sm btn-outline-secondary" disabled>
+                                                <i class="bi bi-clock"></i> In Progress
+                                            </button>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } else { %>
+                <div class="text-center py-5">
+                    <i class="bi bi-inbox text-muted" style="font-size: 4rem;"></i>
+                    <h4 class="text-muted mt-3">No requests yet</h4>
+                    <p class="text-muted">Create your first request to get help from volunteers in your community.</p>
+                    <a href="/elder/create-request" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Create First Request
+                    </a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>

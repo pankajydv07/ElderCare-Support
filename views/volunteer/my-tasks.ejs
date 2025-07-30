@@ -1,0 +1,114 @@
+<% layout('layouts/main') -%>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Tasks</h1>
+        <a href="/volunteer/browse-requests" class="btn btn-outline-primary">
+            <i class="bi bi-search"></i> Browse More Requests
+        </a>
+    </div>
+
+    <% if (tasks.length > 0) { %>
+        <div class="row">
+            <% tasks.forEach(task => { %>
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0"><%= task.title %></h5>
+                                <div>
+                                    <% let statusClass = 'secondary'; %>
+                                    <% if (task.status === 'completed') statusClass = 'success'; %>
+                                    <% if (task.status === 'in-progress') statusClass = 'warning'; %>
+                                    <% if (task.status === 'assigned') statusClass = 'info'; %>
+                                    <span class="badge bg-<%= statusClass %>">
+                                        <%= task.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="badge bg-secondary mb-2">
+                                    <%= task.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                </span>
+                                <p class="card-text"><%= task.description %></p>
+                            </div>
+
+                            <div class="mb-3">
+                                <h6>Elder Details:</h6>
+                                <p class="mb-1"><strong><%= task.elder.name %></strong></p>
+                                <% if (task.elder.phone) { %>
+                                    <p class="mb-1">
+                                        <i class="bi bi-phone"></i> 
+                                        <a href="tel:<%= task.elder.phone %>"><%= task.elder.phone %></a>
+                                    </p>
+                                <% } %>
+                                <% if (task.elder.address && task.elder.address.street) { %>
+                                    <p class="mb-1">
+                                        <i class="bi bi-geo-alt"></i> 
+                                        <%= task.elder.address.street %>, <%= task.elder.address.city %>
+                                    </p>
+                                <% } %>
+                            </div>
+
+                            <% if (task.preferredDate || task.preferredTime) { %>
+                                <div class="mb-3">
+                                    <h6>Preferred Schedule:</h6>
+                                    <% if (task.preferredDate) { %>
+                                        <p class="mb-1">
+                                            <i class="bi bi-calendar"></i> <%= new Date(task.preferredDate).toLocaleDateString() %>
+                                        </p>
+                                    <% } %>
+                                    <% if (task.preferredTime) { %>
+                                        <p class="mb-1">
+                                            <i class="bi bi-clock"></i> <%= task.preferredTime %>
+                                        </p>
+                                    <% } %>
+                                </div>
+                            <% } %>
+
+                            <% if (task.specialInstructions) { %>
+                                <div class="mb-3">
+                                    <h6>Special Instructions:</h6>
+                                    <p class="text-muted"><%= task.specialInstructions %></p>
+                                </div>
+                            <% } %>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Assigned <%= new Date(task.assignedAt).toLocaleDateString() %>
+                                </small>
+                                <div>
+                                    <% if (task.status === 'assigned') { %>
+                                        <button class="btn btn-warning btn-sm me-2" onclick="updateTaskStatus('<%= task._id %>', 'in-progress')">
+                                            <i class="bi bi-play"></i> Start
+                                        </button>
+                                    <% } %>
+                                    <% if (task.status === 'in-progress') { %>
+                                        <button class="btn btn-success btn-sm" onclick="updateTaskStatus('<%= task._id %>', 'completed')">
+                                            <i class="bi bi-check"></i> Complete
+                                        </button>
+                                    <% } %>
+                                    <% if (task.status === 'completed') { %>
+                                        <span class="text-success">
+                                            <i class="bi bi-check-circle"></i> Completed
+                                        </span>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } else { %>
+        <div class="text-center py-5">
+            <i class="bi bi-clipboard-check text-muted" style="font-size: 4rem;"></i>
+            <h4 class="text-muted mt-3">No tasks assigned</h4>
+            <p class="text-muted">Browse available requests to start helping your community.</p>
+            <a href="/volunteer/browse-requests" class="btn btn-primary">
+                <i class="bi bi-search"></i> Browse Requests
+            </a>
+        </div>
+    <% } %>
+</div>

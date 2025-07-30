@@ -1,0 +1,717 @@
+<% layout('layouts/main') -%>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Admin Dashboard</h1>
+            <p class="text-muted mb-0">ElderCare Support Portal Management</p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-gear"></i> Quick Actions
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/admin/manage-users">
+                    <i class="bi bi-people"></i> Manage Users
+                </a></li>
+                <li><a class="dropdown-item" href="/admin/verify-volunteers">
+                    <i class="bi bi-person-check"></i> Verify Volunteers
+                </a></li>
+                <li><a class="dropdown-item" href="/admin/manage-requests">
+                    <i class="bi bi-clipboard-data"></i> Manage Requests
+                </a></li>
+                <li><a class="dropdown-item" href="/admin/analytics">
+                    <i class="bi bi-graph-up"></i> View Analytics
+                </a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#systemSettingsModal">
+                    <i class="bi bi-sliders"></i> System Settings
+                </a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Overview Stats -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="h4 mb-0"><%= stats.totalUsers %></div>
+                            <div>Total Users</div>
+                        </div>
+                        <div class="opacity-75">
+                            <i class="bi bi-people fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-white">
+                        <i class="bi bi-person-plus"></i> 
+                        Elders: <%= stats.totalElders %> | Volunteers: <%= stats.totalVolunteers %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="h4 mb-0"><%= stats.totalRequests %></div>
+                            <div>Total Requests</div>
+                        </div>
+                        <div class="opacity-75">
+                            <i class="bi bi-clipboard-data fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-white">
+                        <i class="bi bi-clock"></i> 
+                        Open: <%= stats.openRequests %>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="h4 mb-0"><%= stats.completedRequests %></div>
+                            <div>Completed</div>
+                        </div>
+                        <div class="opacity-75">
+                            <i class="bi bi-check-circle fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-white">
+                        <i class="bi bi-graph-up"></i> 
+                        Success Rate: <%= stats.totalRequests > 0 ? Math.round((stats.completedRequests / stats.totalRequests) * 100) : 0 %>%
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-info text-white mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="h4 mb-0"><%= stats.verifiedVolunteers %></div>
+                            <div>Verified Volunteers</div>
+                        </div>
+                        <div class="opacity-75">
+                            <i class="bi bi-patch-check fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <div class="small text-white">
+                        <i class="bi bi-hourglass-split"></i> 
+                        Pending: <%= stats.totalVolunteers - stats.verifiedVolunteers %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management Quick Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-people"></i> User Management Overview
+                    </h5>
+                    <a href="/admin/manage-users" class="btn btn-primary btn-sm">
+                        <i class="bi bi-gear"></i> Manage All Users
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="border rounded p-3 text-center">
+                                        <h4 class="text-primary mb-1"><%= stats.totalElders %></h4>
+                                        <h6 class="text-muted mb-0">Elders</h6>
+                                        <small class="text-success">
+                                            <i class="bi bi-arrow-up"></i> Active users seeking help
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="border rounded p-3 text-center">
+                                        <h4 class="text-success mb-1"><%= stats.verifiedVolunteers %></h4>
+                                        <h6 class="text-muted mb-0">Verified Volunteers</h6>
+                                        <small class="text-warning">
+                                            <i class="bi bi-clock"></i> <%= stats.totalVolunteers - stats.verifiedVolunteers %> pending
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <div class="border rounded p-3 text-center">
+                                        <h4 class="text-info mb-1"><%= stats.totalUsers %></h4>
+                                        <h6 class="text-muted mb-0">Total Users</h6>
+                                        <small class="text-info">
+                                            <i class="bi bi-people"></i> All platform users
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="bg-light rounded p-3">
+                                <h6 class="mb-3">Quick User Actions</h6>
+                                <div class="d-grid gap-2">
+                                    <a href="/admin/manage-users?role=volunteer&verified=false" class="btn btn-warning btn-sm">
+                                        <i class="bi bi-hourglass-split"></i> Pending Verifications (<%= stats.totalVolunteers - stats.verifiedVolunteers %>)
+                                    </a>
+                                    <a href="/admin/manage-users?role=elder" class="btn btn-primary btn-sm">
+                                        <i class="bi bi-person-fill"></i> View All Elders
+                                    </a>
+                                    <a href="/admin/manage-users?role=volunteer" class="btn btn-success btn-sm">
+                                        <i class="bi bi-hand-thumbs-up"></i> View All Volunteers
+                                    </a>
+                                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#userStatsModal">
+                                        <i class="bi bi-graph-up"></i> Detailed Stats
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Activities -->
+        <div class="col-xl-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-activity"></i> Recent Activities
+                    </h5>
+                    <a href="/admin/manage-requests" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <% if (recentRequests.length > 0) { %>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Request</th>
+                                        <th>Elder</th>
+                                        <th>Volunteer</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% recentRequests.forEach(request => { %>
+                                        <tr>
+                                            <td>
+                                                <div>
+                                                    <strong><%= request.title %></strong>
+                                                    <br><small class="text-muted">
+                                                        <span class="badge bg-secondary">
+                                                            <%= request.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                                        </span>
+                                                        <% if (request.urgency === 'high') { %>
+                                                            <span class="badge bg-danger ms-1">High Priority</span>
+                                                        <% } %>
+                                                    </small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong><%= request.elder.name %></strong>
+                                                    <br><small class="text-muted">Elder</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <% if (request.volunteer) { %>
+                                                    <div>
+                                                        <strong><%= request.volunteer.name %></strong>
+                                                        <br><small class="text-muted">Volunteer</small>
+                                                    </div>
+                                                <% } else { %>
+                                                    <span class="text-muted">Unassigned</span>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <% let statusClass = 'secondary'; %>
+                                                <% if (request.status === 'completed') statusClass = 'success'; %>
+                                                <% if (request.status === 'in-progress') statusClass = 'warning'; %>
+                                                <% if (request.status === 'assigned') statusClass = 'info'; %>
+                                                <% if (request.status === 'open') statusClass = 'primary'; %>
+                                                <span class="badge bg-<%= statusClass %>">
+                                                    <%= request.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small>
+                                                    <%= new Date(request.createdAt).toLocaleDateString() %>
+                                                    <br><span class="text-muted">
+                                                        <%= new Date(request.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) %>
+                                                    </span>
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#requestModal<%= request._id %>">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- Request Details Modal -->
+                                        <div class="modal fade" id="requestModal<%= request._id %>" tabindex="-1">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Request Details</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <h6>Request Information</h6>
+                                                                <p><strong>Title:</strong> <%= request.title %></p>
+                                                                <p><strong>Description:</strong> <%= request.description %></p>
+                                                                <p><strong>Category:</strong> <%= request.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %></p>
+                                                                <p><strong>Urgency:</strong> 
+                                                                    <% let urgencyClass = 'success'; %>
+                                                                    <% if (request.urgency === 'medium') urgencyClass = 'warning'; %>
+                                                                    <% if (request.urgency === 'high') urgencyClass = 'danger'; %>
+                                                                    <span class="badge bg-<%= urgencyClass %>">
+                                                                        <%= request.urgency.charAt(0).toUpperCase() + request.urgency.slice(1) %>
+                                                                    </span>
+                                                                </p>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h6>Participants</h6>
+                                                                <p><strong>Elder:</strong> <%= request.elder.name %></p>
+                                                                <% if (request.volunteer) { %>
+                                                                    <p><strong>Volunteer:</strong> <%= request.volunteer.name %></p>
+                                                                <% } else { %>
+                                                                    <p><strong>Volunteer:</strong> <span class="text-muted">Not assigned</span></p>
+                                                                <% } %>
+                                                                <p><strong>Status:</strong> 
+                                                                    <span class="badge bg-<%= statusClass %>">
+                                                                        <%= request.status.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) %>
+                                                                    </span>
+                                                                </p>
+                                                                <p><strong>Created:</strong> <%= new Date(request.createdAt).toLocaleString() %></p>
+                                                            </div>
+                                                        </div>
+                                                        <% if (request.specialInstructions) { %>
+                                                            <hr>
+                                                            <h6>Special Instructions</h6>
+                                                            <p><%= request.specialInstructions %></p>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <a href="/admin/manage-requests" class="btn btn-primary">Manage All Requests</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="text-muted mt-2">No recent activities</h5>
+                            <p class="text-muted">Activities will appear here as users interact with the platform.</p>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-xl-4">
+            <!-- Pending Verifications -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="bi bi-hourglass-split text-warning"></i> Pending Verifications
+                    </h6>
+                    <% if (pendingVerifications.length > 0) { %>
+                        <span class="badge bg-warning"><%= pendingVerifications.length %></span>
+                    <% } %>
+                </div>
+                <div class="card-body">
+                    <% if (pendingVerifications.length > 0) { %>
+                        <% pendingVerifications.forEach(volunteer => { %>
+                            <div class="d-flex justify-content-between align-items-center mb-3 p-2 border rounded">
+                                <div>
+                                    <strong><%= volunteer.name %></strong>
+                                    <br><small class="text-muted">
+                                        <i class="bi bi-envelope"></i> <%= volunteer.email %>
+                                        <br><i class="bi bi-calendar"></i> <%= new Date(volunteer.createdAt).toLocaleDateString() %>
+                                    </small>
+                                </div>
+                                <div>
+                                    <button class="btn btn-success btn-sm me-1" onclick="updateVerification('<%= volunteer._id %>', true)" title="Verify">
+                                        <i class="bi bi-check"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#volunteerModal<%= volunteer._id %>" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Volunteer Details Modal -->
+                            <div class="modal fade" id="volunteerModal<%= volunteer._id %>" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Volunteer Details</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p><strong>Name:</strong> <%= volunteer.name %></p>
+                                            <p><strong>Email:</strong> <%= volunteer.email %></p>
+                                            <p><strong>Phone:</strong> <%= volunteer.phone %></p>
+                                            <p><strong>Bio:</strong> <%= volunteer.bio || 'No bio provided' %></p>
+                                            <p><strong>Service Areas:</strong></p>
+                                            <% if (volunteer.serviceableLocations && volunteer.serviceableLocations.length > 0) { %>
+                                                <ul>
+                                                    <% volunteer.serviceableLocations.forEach(location => { %>
+                                                        <li><%= location %></li>
+                                                    <% }) %>
+                                                </ul>
+                                            <% } else { %>
+                                                <p class="text-muted">No service areas specified</p>
+                                            <% } %>
+                                            <p><strong>Registered:</strong> <%= new Date(volunteer.createdAt).toLocaleString() %></p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button class="btn btn-success" onclick="updateVerification('<%= volunteer._id %>', true)">
+                                                <i class="bi bi-check"></i> Verify Volunteer
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
+                        <div class="text-center mt-3">
+                            <a href="/admin/verify-volunteers" class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-list"></i> View All Pending
+                            </a>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center py-3">
+                            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                            <p class="text-muted mt-2 mb-0">All volunteers verified!</p>
+                            <small class="text-muted">New registrations will appear here.</small>
+                        </div>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-shield-check text-success"></i> System Health
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>User Engagement</span>
+                        <span class="badge bg-success">Good</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 6px;">
+                        <div class="progress-bar bg-success" style="width: 78%"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Request Fulfillment</span>
+                        <span class="badge bg-<%= stats.totalRequests > 0 && (stats.completedRequests / stats.totalRequests) > 0.7 ? 'success' : 'warning' %>">
+                            <%= stats.totalRequests > 0 ? Math.round((stats.completedRequests / stats.totalRequests) * 100) : 0 %>%
+                        </span>
+                    </div>
+                    <div class="progress mb-3" style="height: 6px;">
+                        <div class="progress-bar bg-<%= stats.totalRequests > 0 && (stats.completedRequests / stats.totalRequests) > 0.7 ? 'success' : 'warning' %>" 
+                             style="width: <%= stats.totalRequests > 0 ? (stats.completedRequests / stats.totalRequests) * 100 : 0 %>%"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span>Volunteer Verification</span>
+                        <span class="badge bg-<%= stats.totalVolunteers > 0 && (stats.verifiedVolunteers / stats.totalVolunteers) > 0.8 ? 'success' : 'warning' %>">
+                            <%= stats.totalVolunteers > 0 ? Math.round((stats.verifiedVolunteers / stats.totalVolunteers) * 100) : 0 %>%
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-<%= stats.totalVolunteers > 0 && (stats.verifiedVolunteers / stats.totalVolunteers) > 0.8 ? 'success' : 'warning' %>" 
+                             style="width: <%= stats.totalVolunteers > 0 ? (stats.verifiedVolunteers / stats.totalVolunteers) * 100 : 0 %>%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-speedometer2"></i> Quick Stats
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="h5 text-info mb-0"><%= stats.totalFeedbacks %></div>
+                            <small class="text-muted">Total Feedbacks</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h5 text-success mb-0">
+                                <%= ((stats.completedRequests / Math.max(stats.totalRequests, 1)) * 100).toFixed(1) %>%
+                            </div>
+                            <small class="text-muted">Success Rate</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="h5 text-warning mb-0"><%= stats.openRequests %></div>
+                            <small class="text-muted">Open Requests</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="h5 text-primary mb-0">
+                                <%= stats.totalVolunteers - stats.verifiedVolunteers %>
+                            </div>
+                            <small class="text-muted">Pending Verifications</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Statistics Modal -->
+<div class="modal fade" id="userStatsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detailed User Statistics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>User Distribution</h6>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Elders</span>
+                                <span><%= stats.totalElders %> (<%= ((stats.totalElders / stats.totalUsers) * 100).toFixed(1) %>%)</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: <%= (stats.totalElders / stats.totalUsers) * 100 %>%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Volunteers</span>
+                                <span><%= stats.totalVolunteers %> (<%= ((stats.totalVolunteers / stats.totalUsers) * 100).toFixed(1) %>%)</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: <%= (stats.totalVolunteers / stats.totalUsers) * 100 %>%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Admins</span>
+                                <span>1 (<%= ((1 / stats.totalUsers) * 100).toFixed(1) %>%)</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-danger" style="width: <%= (1 / stats.totalUsers) * 100 %>%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Volunteer Status</h6>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Verified</span>
+                                <span><%= stats.verifiedVolunteers %> (<%= stats.totalVolunteers > 0 ? ((stats.verifiedVolunteers / stats.totalVolunteers) * 100).toFixed(1) : 0 %>%)</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: <%= stats.totalVolunteers > 0 ? (stats.verifiedVolunteers / stats.totalVolunteers) * 100 : 0 %>%"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span>Pending Verification</span>
+                                <span><%= stats.totalVolunteers - stats.verifiedVolunteers %> (<%= stats.totalVolunteers > 0 ? (((stats.totalVolunteers - stats.verifiedVolunteers) / stats.totalVolunteers) * 100).toFixed(1) : 0 %>%)</span>
+                            </div>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: <%= stats.totalVolunteers > 0 ? ((stats.totalVolunteers - stats.verifiedVolunteers) / stats.totalVolunteers) * 100 : 0 %>%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Platform Engagement</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Success Rate:</strong> <%= stats.totalRequests > 0 ? ((stats.completedRequests / stats.totalRequests) * 100).toFixed(1) : 0 %>%</li>
+                            <li><strong>Total Requests:</strong> <%= stats.totalRequests %></li>
+                            <li><strong>Completed:</strong> <%= stats.completedRequests %></li>
+                            <li><strong>Open Requests:</strong> <%= stats.openRequests %></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>System Health</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Total Feedback:</strong> <%= stats.totalFeedbacks %></li>
+                            <li><strong>Verification Rate:</strong> <%= stats.totalVolunteers > 0 ? ((stats.verifiedVolunteers / stats.totalVolunteers) * 100).toFixed(1) : 0 %>%</li>
+                            <li><strong>User Growth:</strong> <span class="text-success">Active</span></li>
+                            <li><strong>Platform Status:</strong> <span class="text-success">Healthy</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="/admin/analytics" class="btn btn-primary">View Full Analytics</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Settings Modal -->
+<div class="modal fade" id="systemSettingsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">System Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Platform Configuration</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Auto-verify volunteers</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="autoVerify">
+                                <label class="form-check-label" for="autoVerify">
+                                    Enable automatic verification
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email notifications</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                                <label class="form-check-label" for="emailNotifications">
+                                    Send email notifications
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Maximum requests per elder</label>
+                            <input type="number" class="form-control" value="10" min="1" max="50">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Security Settings</h6>
+                        <div class="mb-3">
+                            <label class="form-label">Session timeout (minutes)</label>
+                            <input type="number" class="form-control" value="1440" min="30">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password requirements</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" checked disabled>
+                                <label class="form-check-label">
+                                    Minimum 6 characters
+                                </label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Admin actions logging</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" checked>
+                                <label class="form-check-label">
+                                    Log all admin actions
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <h6>System Actions</h6>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-warning btn-sm">
+                                <i class="bi bi-arrow-clockwise"></i> Clear Cache
+                            </button>
+                            <button class="btn btn-info btn-sm">
+                                <i class="bi bi-download"></i> Export Data
+                            </button>
+                            <button class="btn btn-danger btn-sm">
+                                <i class="bi bi-exclamation-triangle"></i> Maintenance Mode
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for admin dashboard -->
+<style>
+.card {
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(33, 40, 50, 0.15);
+    border: none;
+}
+
+.card-header {
+    background-color: rgba(33, 37, 41, 0.03);
+    border-bottom: 1px solid rgba(33, 37, 41, 0.125);
+}
+
+.progress {
+    background-color: rgba(33, 37, 41, 0.1);
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+}
+
+.modal-header {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+.modal-header .btn-close {
+    filter: invert(1);
+}
+</style>
